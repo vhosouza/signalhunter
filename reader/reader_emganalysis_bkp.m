@@ -30,55 +30,32 @@ function output_reader = reader_emganalysis
 
 % loading signal and configuration data
 [filename, pathname, fid] = uigetfile({'*.txt','Text files (*.txt)';...
-    '*.xlsx;*.xls','MS Excel Files (*.xlsx, *xls)'}, 'Select the signal file',...
-    'MultiSelect', 'on');
+    '*.xlsx;*.xls','MS Excel Files (*.xlsx, *xls)'}, 'Select the signal file');
 % data_aux = load([pathname filename]);
-
 if fid == 1
-    if iscell(filename)
-        for nf = 1:size(filename, 2)
-            data_aux = readtable([pathname filename{nf}], 'Delimiter', '\t',...
-                'ReadVariableNames',false);
-            if nf == 1
-                data_aux = table2array(data_aux(:,1:2));
-                data = data_aux;
-            else
-                data_aux = table2array(data_aux(:,2:end));
-                data = horzcat(data, data_aux);
-            end
-        end
-    else
-        data = readtable([pathname filename], 'Delimiter', '\t',...
-            'ReadVariableNames',false);
-        data = table2array(data(:,1:end));
-    %     data_aux = strrep(data_aux,',','.');
-    %     data_aux = str2double(data_aux);
-    end
+    data_aux = readtable([pathname filename], 'Delimiter', '\t',...
+        'ReadVariableNames',false);
+    data_aux = table2array(data_aux(:,1:6));
+    data_aux = strrep(data_aux,',','.');
+    data_aux = str2double(data_aux);
 elseif fid == 2
-    data = xlsread([pathname filename]);
+    data_aux = xlsread([pathname filename]);
 %     data_aux = strrep(data_aux,',','.');
 %     data_aux = str2double(data_aux);
 end
 
-titles_part = 'DATA';
-fig_titles = cell(1, size(data, 2)-1);
-for nf = 1:size(filename, 2)
-    fig_titles{nf} = [titles_part num2str(nf)];
-end
-
-fs = 1/(data(3,1) - data(2,1));
-signal = data(:,2:end);
+fs = 1/(data_aux(3,1) - data_aux(2,1));
+signal = data_aux(:,2:end);
 baseline = signal(1:1*round(fs),:);
 offset = repmat(mean(baseline), [size(signal,1),1]);
 
-output_reader.n_channels = size(data,2)-1;
+output_reader.n_channels = size(data_aux,2)-1;
 output_reader.signal = signal - offset;
-output_reader.xs = data(:,1);
-output_reader.force = data(:,2);
-output_reader.baseline = data(1:1*round(fs),2:end);
+output_reader.xs = data_aux(:,1);
+output_reader.force = data_aux(:,2);
+output_reader.baseline = data_aux(1:1*round(fs),2:end);
 output_reader.fs = fs;
 output_reader.offset = mean(output_reader.baseline);
 
-output_reader.fig_titles = fig_titles;
-% output_reader.fig_titles = {'FORCE', 'EMG1', 'EMG2', 'EMG3', 'EMG4'};
+output_reader.fig_titles = {'FORCE', 'EMG1', 'EMG2', 'EMG3', 'EMG4'};
 

@@ -93,7 +93,7 @@ for n = 1:n_channels
 %         xs, pmin(i,:), pmax(i,:), [mep_lat(i), mep_end(i)]);
     
     handles.haxes(1,n) = graph_model(handles.panel_graph, fig_titles, n);
-    [~, ~, ~] = plot_emganalysis(handles.haxes(1, n), signal(:,n), xs,...
+    [~, ~, ~] = plot_emganalysis(handles.haxes(1, n), signal(:,1), signal(:,n), xs,...
         [pmax_I(n) amp(n)], [emg_start(n) emg_end(n)]);
     
     % progress bar update
