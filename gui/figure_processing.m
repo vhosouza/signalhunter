@@ -84,6 +84,8 @@ uimenu(hsubopen, 'Label', 'EMF Analysis',...
     'Callback', @callback_open);
 uimenu(hsubopen, 'Label', 'EMG Analysis',...
     'Callback', @callback_open);
+uimenu(hsubopen, 'Label', 'EMG-Gait Analysis',...
+    'Callback', @callback_open);
 
 uimenu(hmenufile, 'Label', 'Save log',...
     'Callback', @callback_savelog);
@@ -107,10 +109,12 @@ hsubtools(1) = uimenu(hmenutools, 'Label', 'TMS + VC',...
     'Callback', @callback_tms_vc);
 hsubtools(2) = uimenu(hmenutools, 'Label', 'MEP analysis',...
     'Callback', @callback_mepanalysis);
-hsubtools(3) = uimenu(hmenutools, 'Label',...
-    'Multi channels', 'Callback', @callback_multi);
+hsubtools(3) = uimenu(hmenutools, 'Label', 'Multi channels',...
+    'Callback', @callback_multi);
 hsubtools(4) = uimenu(hmenutools, 'Label', 'EMG analysis',...
     'Callback', @callback_emganalysis);
+hsubtools(5) = uimenu(hmenutools, 'Label', 'EMG-Gait analysis',...
+    'Callback', @callback_emggait);
 
 set(hsubnew, 'Enable', 'off');
 set(hsubdata, 'Enable', 'off');
@@ -268,6 +272,31 @@ switch handles.data_id
         
         open_id = 1;
         
+    case 'emg-gait analysis'
+        callback_emggait(handles.fig);
+        
+        % progress bar update
+        value = 1/2;
+        progbar_update(handles.progress_bar, value);
+        
+%         handles.reader = reader_emganalysis;
+%         handles.processed = process_emg(handles.reader);
+        
+        handles.reader = reader_emggait;
+        handles.processed = process_emggait(handles.reader);
+        
+        msg = ['Data opened. ', 'Number of channels: ',...
+            num2str(handles.reader.n_channels)];
+        handles = panel_textlog(handles, msg);
+        
+        handles = panel_emggait(handles);
+        handles = graphs_emggait(handles);
+        
+        % progress bar update
+        value = 1;
+        progbar_update(handles.progress_bar, value);
+        
+        open_id = 1;
         
     case 'myosystem'
         disp('myosystem selected');
@@ -451,6 +480,32 @@ if strcmp(get(handles.hsubtools(4), 'Checked'),'on')
 else
     set(handles.hsubtools(:), 'Checked', 'off');
     set(handles.hsubtools(4), 'Checked', 'on');
+end
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+function callback_emggait(hObject, ~)
+% Callback - Sub Menu 4
+
+handles = guidata(hObject);
+
+if isfield(handles, 'panel_tools')
+    delete(handles.panel_tools);
+    handles = rmfield(handles, 'panel_tools');
+end
+if isfield(handles, 'panel_graph')
+    delete(handles.panel_graph);
+    handles = rmfield(handles, 'panel_graph');
+    handles = rmfield(handles, 'haxes');
+end
+
+if strcmp(get(handles.hsubtools(5), 'Checked'),'on')
+    set(handles.hsubtools(5), 'Checked', 'off');
+else
+    set(handles.hsubtools(:), 'Checked', 'off');
+    set(handles.hsubtools(5), 'Checked', 'on');
 end
 
 % Update handles structure
