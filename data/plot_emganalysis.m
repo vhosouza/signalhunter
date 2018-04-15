@@ -26,19 +26,11 @@
 % Date: 13.11.2016
 
 
-function [hamp, hlat, hend] = plot_emganalysis(ax, trigger, signal, xs, amp, lat)
+function [hamp, hlat, hend] = plot_emganalysis(ax, signal, xs, amp, lat)
 
 axes(ax);
 hold on
 plot(xs, signal);
-
-if sum(signal - trigger) ~= 0
-    norm_trigger_off = (trigger/max(trigger))*max(signal) - mean((trigger/max(trigger))*max(signal));
-    plot(xs, norm_trigger_off, 'Color', [153 153 153]/255);
-end
-
-% amp(1) = 0;
-% lat(1) = 0;
 
 yl = get(ax, 'YLim');
 if amp(1) ~=0
@@ -60,9 +52,5 @@ else
     hlat = nan;
     hend = nan;
 end
-
-set(hamp, 'Visible', 'off');
-set(hlat, 'Visible', 'off');
-set(hend, 'Visible', 'off');
 
 hold off

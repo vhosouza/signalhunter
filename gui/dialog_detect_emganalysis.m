@@ -204,7 +204,7 @@ handles.hstr = hstr;
 handles.pb_names = pb_names;
 
 [handles.hamp, handles.hlat, handles.hend] = plot_emganalysis(axesdetect,...
-    signal(:,1), signal(:,id), xs, [pmax_I amp], [emg_lat emg_end]);
+    signal(:,id), xs, [pmax_I amp], [emg_lat emg_end]);
 
 % handles = plot_graph(handles);
 
