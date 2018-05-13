@@ -32,8 +32,25 @@ function output_reader = reader_emggait
 [filename, pathname, fid] = uigetfile({'*.txt','Text files (*.txt)';...
     '*.xlsx;*.xls','MS Excel Files (*.xlsx, *xls)'}, 'Select the signal file',...
     'MultiSelect', 'on');
-% data_aux = load([pathname filename]);
 
+% data_aux = load([pathname filename]);
+% save('cassia_sl.mat','fid', 'filename', 'pathname');
+
+% sub = 1;
+% 
+% if sub == 1
+%     dat = load('ana.mat');
+% elseif sub == 2
+%     dat = load('cassia.mat');
+% elseif sub == 3
+%     dat = load('ana_sl.mat');
+% elseif sub == 4
+%     dat = load('cassia_sl.mat');
+% end
+% 
+% fid = dat.fid;
+% filename = dat.filename;
+% pathname = dat.pathname;
 
 if fid == 1
     if iscell(filename)
@@ -79,12 +96,14 @@ end
 %     end
 % end
 
-n_channels = size(data,2)-1;
+n_channels = size(data,2) - 1;
 fs = 1/(data(3,1) - data(2,1));
 signal = data(:,2:end);
 signal_f = signal;
 
-signal(:, 1:end) = detrend(signal(:, 1:end));
+signal(:, 1) = detrend(signal(:, 1));
+% signal(:, 1) = abs(detrend(signal(:, 1)));
+signal(:, 2:end) = detrend(signal(:, 2:end));
 signal_f(:, 1) = signal(:, 1);
 signal_f(:, 2:end) = lowpass(abs(signal(:, 2:end)), 10, fs);
 

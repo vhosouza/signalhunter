@@ -41,10 +41,13 @@ switch handles.data_id
         filt_id = export_multi(handles.reader, handles.processed);
         
     case 'emf_analysis'
-        a = 0
+        disp('EMF analysis export')
     
     case 'emg analysis'
         filt_id = export_emganalysis(handles.processed);
+    
+    case 'emg-gait analysis'
+        filt_id = export_emggait(handles.processed);
 end
 
 end
@@ -151,6 +154,104 @@ switch filt_id
         else
             fid = fopen([pathname filename], 'a');
             fprintf(fid, the_format, export_data{1,:});
+            fclose(fid);
+        end
+end
+
+end
+
+
+function filt_id = export_emggait(processed)
+%EXPORT_EMGANALYSIS Function to standardize the output for single EMG processing
+%   This function exports to Excel and ASCII file with data written in rows
+%   and variables in columns
+
+
+n_data = ones(processed.n_total, 1);
+n_ch = ones(size(processed.rms_med, 2), 1);
+
+musc = processed.musc;
+musc_med = processed.musc_med;
+side = processed.side;
+side_med = processed.side_med;
+inst = processed.inst;
+inst_med = processed.inst_med;
+
+rms_exp = mat2cell(cell2mat(processed.rms'), n_data, 1);
+arv_exp = mat2cell(cell2mat(processed.arv'), n_data, 1);
+fmed_exp = mat2cell(cell2mat(processed.fmed'), n_data, 1);
+fmean_exp = mat2cell(cell2mat(processed.fmean'), n_data, 1);
+diff_t_exp = mat2cell(cell2mat(processed.diff_t'), n_data, 1);
+
+rms_med = mat2cell(processed.rms_med(2, :)', n_ch, 1);
+arv_med = mat2cell(processed.arv_med(2, :)', n_ch, 1);
+fmed_med = mat2cell(processed.fmed_med(2, :)', n_ch, 1);
+fmean_med = mat2cell(processed.fmean_med(2, :)', n_ch, 1);
+diff_t_med = mat2cell(processed.diff_t_med(2, :)', n_ch, 1);
+
+rms_qt1 = mat2cell(processed.rms_med(1, :)', n_ch, 1);
+arv_qt1 = mat2cell(processed.arv_med(1, :)', n_ch, 1);
+fmed_qt1 = mat2cell(processed.fmed_med(1, :)', n_ch, 1);
+fmean_qt1 = mat2cell(processed.fmean_med(1, :)', n_ch, 1);
+diff_t_qt1 = mat2cell(processed.diff_t_med(1, :)', n_ch, 1);
+
+rms_qt3 = mat2cell(processed.rms_med(3, :)', n_ch, 1);
+arv_qt3 = mat2cell(processed.arv_med(3, :)', n_ch, 1);
+fmed_qt3 = mat2cell(processed.fmed_med(3, :)', n_ch, 1);
+fmean_qt3 = mat2cell(processed.fmean_med(3, :)', n_ch, 1);
+diff_t_qt3 = mat2cell(processed.diff_t_med(3, :)', n_ch, 1);
+
+headers_med = [{'muscle'} {'side'} {'time'} {'rms (mV)'} {'arv (mV)'}...
+    {'fmed (Hz)'} {'fmean (Hz)'} {'delta (ms)'} {'rms_qt1 (mV)'}...
+    {'rms_qt3 (mV)'} {'arv_qt1 (mV)'} {'arv_qt3 (mV)'} {'fmed_qt1 (Hz)'} {'fmed_qt3 (Hz)'} {'fmean_qt1 (Hz)'}...
+    {'fmean_qt3 (Hz)'} {'diff_t_qt1 (ms)'} {'diff_t_qt3 (ms)'}];
+export_data_med = [musc_med side_med inst_med rms_med arv_med...
+    fmed_med fmean_med diff_t_med rms_qt1 rms_qt3 arv_qt1 arv_qt3...
+    fmed_qt1 fmed_qt3 fmean_qt1...
+    fmean_qt3 diff_t_qt1 diff_t_qt3];
+
+headers = [{'muscle'} {'side'} {'time'} {'rms (mV)'} {'arv (mV)'} {'fmed (Hz)'}...
+    {'fmean (Hz)'} {'delta (ms)'}];
+export_data = [musc side inst rms_exp arv_exp fmed_exp fmean_exp diff_t_exp];
+
+[filename_med, pathname_med, ~] = uiputfile({'*.xls;*.xlsx','MS Excel Files (*.xls,*.xlsx)'},...
+    'Export data', 'processed_data_med.xlsx');
+
+[filename, pathname, filt_id] = uiputfile({'*.xls;*.xlsx','MS Excel Files (*.xls,*.xlsx)'},...
+    'Export data', 'processed_data.xlsx');
+
+switch filt_id
+    case 1
+        if  exist([pathname filename], 'file')
+            [~, ~, previous_data] = xlsread([pathname filename]);
+            [~, ~, previous_data_med] = xlsread([pathname_med filename_med]);
+            xlswrite([pathname filename], [previous_data; export_data])
+            xlswrite([pathname_med filename_med], [previous_data_med; export_data_med])
+        else
+            xlswrite([pathname filename], [headers; export_data])
+            xlswrite([pathname_med filename_med], [headers_med; export_data_med])
+        end
+                
+    case 2
+        fid = fopen([pathname filename]);
+        try
+            previous_data = fgets(fid);
+        catch
+            error('File could not be read.');
+        end
+        the_format = '\n%s %d %d %d';
+        if isempty(previous_data)
+            fid = fopen([pathname filename], 'w');
+            fprintf(fid, '%s %s %s %s', headers{1,:});
+            for ri = 1:size(export_data, 1)
+                fprintf(fid, the_format, export_data{ri,:});
+            end
+            fclose(fid);
+        else
+            fid = fopen([pathname filename], 'a');
+            for ri = 1:size(export_data, 1)
+                fprintf(fid, the_format, export_data{ri,:});
+            end
             fclose(fid);
         end
 end

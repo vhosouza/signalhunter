@@ -10,7 +10,9 @@ for column = 1:size(ReshapedX,2)
     rms(column,1)=norm(x)/sqrt(length(x));
     x=x-mean(x);
 %     [P,f]=psd(x,fsamp,fsamp,boxcar(fsamp),0);
-    [P,f]=pwelch(x,rectwin(fsamp),0,fsamp,fsamp);
+%     [P,f]=pwelch(x,rectwin(fsamp),0,fsamp,fsamp);
+% windows with the size of the total signal given as input
+    [P,f]=pwelch(x,rectwin(numel(x)),0,[],fsamp);
 
     if sum(P)~=0,
 
