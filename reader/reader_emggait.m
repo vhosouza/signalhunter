@@ -52,33 +52,46 @@ function output_reader = reader_emggait
 % filename = dat.filename;
 % pathname = dat.pathname;
 
+data_aux = cell(1, size(filename, 2));
+data_len = zeros(1, size(filename, 2));
+
 if fid == 1
     if iscell(filename)
-        for nf = 1:size(filename, 2)
-            data_aux = readtable([pathname filename{nf}], 'Delimiter', '\t',...
-                'ReadVariableNames',false);  
+            for nf = 1:size(filename, 2)
+                data_aux{nf} = readtable([pathname filename{nf}], 'Delimiter', '\t',...
+                    'ReadVariableNames',false);
+                data_len(nf) = size(data_aux{nf}, 1);
+                minlen = min(data_len);
 %             data_aux = readtable([pathname filename{nf}], 'Delimiter', '\t',...
-%                 'ReadVariableNames',false, 'Format', '%s%s');  
+%                 'ReadVariableNames',false, 'Format', '%s%s');
 %             data_aux = table2cell(data_aux);
 %             data_aux = strrep(data_aux,',','.');
 %             data_aux = str2double(data_aux);
-            if nf == 1
-                data_aux = table2array(data_aux(:,1:2));
-                data = data_aux;
-            else
-                data_aux = table2array(data_aux(:,2:end));
-                data = horzcat(data, data_aux);
             end
+            try
+            for nf = 1:size(filename, 2)
+                if nf == 1
+                    data_arr = table2array(data_aux{nf}(1:minlen,1:2));
+                    data_emg = data_arr;
+                else
+                    data_arr = table2array(data_aux{nf}(1:minlen,2:end));
+                    data_emg = horzcat(data_emg, data_arr);
+                end
+            end
+            catch
+                hwarn = warndlg('Please check if decimal point is a dot and not a comma.',...
+                    'Atention!');
+                uiwait(hwarn);
         end
     else
-        data = readtable([pathname filename], 'Delimiter', '\t',...
+        data_emg = readtable([pathname filename], 'Delimiter', '\t',...
             'ReadVariableNames',false);
-        data = table2array(data(:,1:end));
+        data_emg = table2array(data_emg(:,1:end));
     %     data_aux = strrep(data_aux,',','.');
     %     data_aux = str2double(data_aux);
     end
 elseif fid == 2
-    data = xlsread([pathname filename]);
+    data_emg = xlsread([pathname filename]);
 %     data_aux = strrep(data_aux,',','.');
 %     data_aux = str2double(data_aux);
 end
@@ -96,9 +109,9 @@ end
 %     end
 % end
 
-n_channels = size(data,2) - 1;
-fs = 1/(data(3,1) - data(2,1));
-signal = data(:,2:end);
+n_channels = size(data_emg,2) - 1;
+fs = 1/(data_emg(3,1) - data_emg(2,1));
+signal = data_emg(:,2:end);
 signal_f = signal;
 
 signal(:, 1) = detrend(signal(:, 1));
@@ -124,7 +137,7 @@ end
 output_reader.n_channels = n_channels;
 output_reader.signal = signal;
 output_reader.signal_f = signal_f;
-output_reader.xs = data(:,1);
+output_reader.xs = data_emg(:,1);
 output_reader.fs = fs;
 
 output_reader.fig_titles = fig_titles;
