@@ -27,6 +27,16 @@
 
 
 function output_reader = reader_emggait
+% 
+answer = questdlg('Process which task?', ...
+    'Task selection', 'Gait', 'Sit-Stand', 'Sit-Stand');
+switch answer
+    case 'Gait'
+        task_id = 0;
+    case 'Sit-Stand'
+        task_id = 1;
+end
+
 
 % loading signal and configuration data
 [filename, pathname, fid] = uigetfile({'*.txt','Text files (*.txt)';...
@@ -36,8 +46,9 @@ function output_reader = reader_emggait
 % data_aux = load([pathname filename]);
 % save('cassia_sl.mat','fid', 'filename', 'pathname');
 
-% sub = 1;
-% 
+% task_id = 1;
+% sub = 4;
+% % 
 % if sub == 1
 %     dat = load('ana.mat');
 % elseif sub == 2
@@ -118,6 +129,9 @@ signal(:, 1) = detrend(signal(:, 1));
 % signal(:, 1) = abs(detrend(signal(:, 1)));
 signal(:, 2:end) = detrend(signal(:, 2:end));
 signal_f(:, 1) = signal(:, 1);
+if task_id
+    signal_f(:, 1) = signal_f(:, 1) - mean(signal_f(1:fs, 1));
+end
 signal_f(:, 2:end) = lowpass(abs(signal(:, 2:end)), 10, fs);
 
 if iscell(filename)
@@ -139,6 +153,7 @@ output_reader.signal = signal;
 output_reader.signal_f = signal_f;
 output_reader.xs = data_emg(:,1);
 output_reader.fs = fs;
+output_reader.task_id = task_id;
 
 output_reader.fig_titles = fig_titles;
 
