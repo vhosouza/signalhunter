@@ -65,6 +65,10 @@ tb1 = 20;
 % Threshold for latency calculation
 thresh_lat = 0.7;
 
+% 2nd order bandpass filter
+% N = 2; 
+% [B, A] = butter(N, [1 1000]/(fs/2));
+
 split_pots = cell(n_frames, 1);
 average_pots = cell(n_frames, 1);
 split_baseline = cell(n_frames, 1);
@@ -107,7 +111,9 @@ hbar = waitbar(0,'Frame 1','Name','Processing signals...');
 for id_f = 1:n_frames
     
     if epoched
-        split_pots{id_f, 1} = data(:,id_f);
+        data_detrend = detrend(data(:,id_f));
+        % split_pots{id_f, 1} = filtfilt(B, A, data_detrend); % NB filtfilt applies the filter twice! 
+        split_pots{id_f, 1} = data_detrend;
         split_xs{id_f, 1} = xs;
         xs_norm{id_f,1} = xs*1000;
     else

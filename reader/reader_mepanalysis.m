@@ -49,6 +49,8 @@ switch filt_id
     case 1
         data = importdata([pathname filename], ';', 22);
         reader = csv_reader(data.data, pathname, filename, true);
+        % data = importdata([pathname filename], ';');
+        % reader = csv_reader(data, pathname, filename, true);
     case 2
         data = importdata([pathname filename]);
         reader = csv_reader(data, pathname, filename, false);
